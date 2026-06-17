@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Global Climate Explorer · The world's best climates, month by month</title>
+<meta name="description" content="An interactive globe of the world's climate — painted blue (cold) to red (hot) with green for the most comfortable, healthiest places. Pick a month (Jan–Dec) and find the best climates on Earth to visit or live, ranked by city and country. Switch to temperature, humidity or rainfall, or set your own preferences.">
+<meta property="og:title" content="Global Climate Explorer — the world's best climates, month by month">
+<meta property="og:description" content="Find the most comfortable climates on Earth for any month. A living globe from blue (cold) through green (perfect) to red (too hot), ranking cities and countries.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Crect width='256' height='256' rx='58' fill='%23061521'/%3E%3Ccircle cx='128' cy='128' r='76' fill='none' stroke='%2335d3a0' stroke-width='7'/%3E%3Cpath d='M52 128 a76 76 0 0 1 152 0' fill='none' stroke='%23ff6b5e' stroke-width='7'/%3E%3Cpath d='M52 128 a76 76 0 0 0 152 0' fill='none' stroke='%234ea8ff' stroke-width='7'/%3E%3Ccircle cx='128' cy='128' r='15' fill='%23ffd84d'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="app.css?v=1">
+</head>
+<body>
+
+  <!-- ===== Header ===== -->
+  <header id="topbar">
+    <div class="brand" id="brandHome" title="Reset view">
+      <svg class="logo" viewBox="0 0 256 256" aria-hidden="true">
+        <defs><radialGradient id="bg" cx="50%" cy="32%" r="90%"><stop offset="0%" stop-color="#0d3550"/><stop offset="60%" stop-color="#07202f"/><stop offset="100%" stop-color="#04131d"/></radialGradient></defs>
+        <rect width="256" height="256" rx="58" fill="url(#bg)"/>
+        <g fill="none" stroke-width="12" stroke-linecap="round">
+          <path d="M44 128 a84 84 0 0 1 168 0" stroke="#ff6b5e"/>
+          <path d="M44 128 a84 84 0 0 0 168 0" stroke="#4ea8ff"/>
+        </g>
+        <circle cx="128" cy="128" r="26" fill="#35d3a0"/>
+        <circle cx="128" cy="128" r="11" fill="#ffd84d"/>
+      </svg>
+      <div class="brand-txt">
+        <span class="brand-kicker">The world's climate, month by month</span>
+        <span class="brand-name">Global Climate Explorer</span>
+        <span class="brand-sub">Find the most comfortable climates on Earth</span>
+      </div>
+    </div>
+    <div class="tools">
+      <div id="searchWrap">
+        <input id="search" type="text" placeholder="Search a city or country…" autocomplete="off" spellcheck="false" aria-label="Search">
+        <div id="searchResults" class="hidden"></div>
+      </div>
+      <button id="menuBtn" class="iconbtn" title="Menu" aria-label="Menu">☰</button>
+      <div id="menu" class="hidden">
+        <button class="mi" id="miReset"><span class="mi-ic">⤢</span><span class="mi-tx">Reset view</span></button>
+        <button class="mi" id="miSpin"><span class="mi-ic">⟳</span><span class="mi-tx">Auto-rotate</span><span class="mi-state">On</span></button>
+        <button class="mi" id="miFull"><span class="mi-ic">⛶</span><span class="mi-tx">Fullscreen</span></button>
+        <div class="mi-sep"></div>
+        <button class="mi" id="miPrefs"><span class="mi-ic">⚙️</span><span class="mi-tx">Your preferences</span></button>
+        <button class="mi" id="miTable"><span class="mi-ic">▦</span><span class="mi-tx">Full ranking table</span></button>
+        <button class="mi" id="miCities"><span class="mi-ic">📍</span><span class="mi-tx">City markers</span><span class="mi-state">On</span></button>
+        <button class="mi" id="miMap"><span class="mi-ic">🗺️</span><span class="mi-tx">Flat map</span><span class="mi-state">Off</span></button>
+        <div class="mi-sep"></div>
+        <button class="mi" id="miPanel"><span class="mi-ic">📊</span><span class="mi-tx">Ranking panel</span><span class="mi-state">On</span></button>
+        <button class="mi" id="miHelp"><span class="mi-ic">❔</span><span class="mi-tx">How it works</span></button>
+        <button class="mi" id="miAbout"><span class="mi-ic">ℹ</span><span class="mi-tx">About &amp; method</span></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Controls ===== -->
+  <div id="controls">
+    <div id="layerBar" role="group" aria-label="Choose what to map"></div>
+    <div class="ctl-right">
+      <button class="minibtn" id="btnPrefs" title="Set your climate preferences">⚙️ <span class="mb-tx">Preferences</span></button>
+      <button class="minibtn" id="btnTable" title="See the full ranking table">▦ <span class="mb-tx">Table</span></button>
+      <button class="minibtn" id="btnMap" title="Toggle flat map / globe">🗺️ <span class="mb-tx">Flat map</span></button>
+    </div>
+  </div>
+
+  <!-- ===== Globe + flat map ===== -->
+  <div id="globeViz"></div>
+  <canvas id="flatViz" class="hidden"></canvas>
+  <div id="tooltip" class="hidden"></div>
+
+  <!-- ===== Left: ranking ===== -->
+  <aside id="rankPanel">
+    <div class="rp-head">
+      <div class="rp-tabs" id="rpTabs">
+        <button data-tab="cities" class="on">📍 Cities</button>
+        <button data-tab="countries">🌍 Countries</button>
+      </div>
+      <button id="rpCollapse" title="Hide panel" aria-label="Hide panel">‹</button>
+    </div>
+    <div class="rp-sub" id="rpSub"></div>
+    <div class="rp-filters" id="rpFilters"></div>
+    <div class="rp-stat" id="rpStat"></div>
+    <div id="rankList"></div>
+    <div class="rp-foot" id="rpFoot">Tap a row to fly there ↗</div>
+  </aside>
+  <button id="rpShow" class="hidden" title="Show ranking">📊</button>
+
+  <!-- ===== Right: detail ===== -->
+  <section id="detailCard" class="hidden">
+    <button id="detailClose" aria-label="Close">×</button>
+    <div id="detailBody"></div>
+  </section>
+
+  <!-- ===== Legend ===== -->
+  <div id="legend">
+    <button class="lg-head" id="legendToggle"><span id="lgTitle">Comfort</span><span class="lg-caret">▸</span></button>
+    <div id="legendBody">
+      <div class="lg-scale"><div class="lg-grad" id="lgGrad"></div><div class="lg-ticks" id="lgTicks"></div></div>
+      <div class="lg-rows" id="lgRows"></div>
+    </div>
+  </div>
+
+  <!-- ===== Preferences drawer ===== -->
+  <div id="prefbar">
+    <div class="wb-head">
+      <button id="pbCollapse" class="wb-collapse" title="Hide preferences">⚙️ <span>Your ideal climate</span> <span class="wb-caret">▾</span></button>
+      <div class="wb-presets" id="pbPresets"></div>
+      <button id="pbReset" class="wb-reset" title="Back to evidence-based comfort">Reset</button>
+    </div>
+    <div class="pb-body" id="pbBody"></div>
+  </div>
+  <button id="pbShow" class="hidden" title="Set your ideal climate">⚙️</button>
+
+  <!-- ===== Month timeline ===== -->
+  <div id="timebar">
+    <button id="tlPlay" class="tl-play" title="Play the year (Jan → Dec)">▶</button>
+    <div class="tl-main">
+      <div class="tl-head"><span id="tlMonth">Year-round</span><span id="tlReadout"></span></div>
+      <div class="tl-track"><input id="tlSlider" type="range" min="0" max="12" step="1" value="0"></div>
+      <div class="tl-marks" id="tlMarks"></div>
+    </div>
+    <button id="tlYear" class="tl-reset" title="Year-round average">⟳ year</button>
+  </div>
+
+  <!-- ===== Toast ===== -->
+  <div id="toast"></div>
+
+  <!-- ===== Table overlay ===== -->
+  <div id="tableOverlay" class="overlay hidden">
+    <div class="ov-box table-box">
+      <button class="ov-close" id="tableClose" aria-label="Close">×</button>
+      <div class="tbl-head">
+        <h2>▦ Climate comfort, every month</h2>
+        <input id="tblSearch" type="text" placeholder="Filter cities…" autocomplete="off" spellcheck="false">
+      </div>
+      <p class="tbl-lead">Comfort score (0–100) for each month. Click a column to sort; click a city to fly there. Cells are coloured blue (cold) → green (perfect) → red (hot).</p>
+      <div class="tbl-scroll"><table id="dataTable"></table></div>
+    </div>
+  </div>
+
+  <!-- ===== About ===== -->
+  <div id="aboutOverlay" class="overlay hidden">
+    <div class="ov-box">
+      <button class="ov-close" id="aboutClose" aria-label="Close">×</button>
+      <h2>About the Global Climate Explorer</h2>
+      <p>This map paints the climate of every point on Earth — <b style="color:#4ea8ff">blue</b> where it's cold, <b style="color:#35d3a0">green</b> where it's most comfortable, <b style="color:#ffd84d">yellow</b> for warm, <b style="color:#ff6b5e">red</b> where it's too hot — for any <b>month of the year</b>. Drag the timeline to find the best places to be in January, July, or any month; or pick <b>Year-round</b> for the best all-year climates.</p>
+      <p>The default <b>⭐ Comfort</b> view is evidence-based: it scores each place on how comfortable and <b>healthy</b> its climate is for humans. Switch to <b>🌡️ Temperature</b>, <b>💧 Humidity</b> or <b>🌧️ Rainfall</b> to map just that. Or open <b>⚙️ Your ideal climate</b> to override the autopilot — chase the cold to ski, the rain for green hills, or heat &amp; dry — and the map &amp; rankings rebuild around you.</p>
+      <h3>How the comfort score works</h3>
+      <p class="ab-method" id="abMethod"></p>
+      <p class="ov-cav">Climate figures are 1970–2000 monthly normals from <b>WorldClim 2.1</b> (~18 km resolution), with relative humidity derived from vapour pressure. Cities are every settlement above 100,000 people (GeoNames). This shows the <i>typical</i> climate, not a forecast, and predates the most recent warming. Comfort is one defensible model among many — your mileage (and your sweater) may vary.</p>
+      <p class="ov-src">v0.1.0 · Built with globe.gl · climate © WorldClim 2.1 (CC BY 4.0) · cities © GeoNames (CC BY 4.0) · part of the <a href="https://42-apps.github.io/" target="_blank" rel="noopener">42-apps</a> collection.</p>
+    </div>
+  </div>
+
+  <!-- ===== Welcome ===== -->
+  <div id="welcomeOverlay" class="overlay hidden">
+    <div class="ov-box welcome-box">
+      <span class="wel-kicker">Global Climate Explorer</span>
+      <h2>Where on Earth has the best weather? 🌦️</h2>
+      <p class="wel-tag">A living globe of the world's climate — <b style="color:#4ea8ff">blue</b> where it's cold, <b style="color:#35d3a0">green</b> where it's perfect, <b style="color:#ff6b5e">red</b> where it's too hot — for every month of the year.</p>
+      <ul class="wel-tips">
+        <li><span class="wt-ic">🟢</span><span>Each place is coloured by how <b>comfortable &amp; healthy</b> its climate is. Greener = better.</span></li>
+        <li><span class="wt-ic">📅</span><span>Drag the <b>month timeline</b> (or press ▶) to find the best places to be in <b>any month</b> — or pick <b>Year-round</b>.</span></li>
+        <li><span class="wt-ic">🔍</span><span>Switch to <b>Temperature, Humidity or Rainfall</b>, or set <b>your own ideal climate</b> (ski? rain? heat?).</span></li>
+        <li><span class="wt-ic">📍</span><span>See the best climates ranked by <b>city</b> and <b>country</b>; click any for its 12-month profile.</span></li>
+      </ul>
+      <button class="wel-start" id="welStart">Explore the climate</button>
+      <p class="wel-foot">Drag to spin · scroll to zoom · click a place</p>
+    </div>
+  </div>
+
+  <script src="lib/globe.gl.min.js"></script>
+  <script src="data/countries.js?v=1"></script>
+  <script src="data/cities.js?v=1"></script>
+  <script src="data/grid.js?v=1"></script>
+  <script src="app.js?v=1"></script>
+</body>
+</html>

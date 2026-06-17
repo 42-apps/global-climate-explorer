@@ -1,0 +1,8 @@
+.DS_Store
+.claude/
+*.zip
+# build tooling & large inputs (re-downloadable; not needed to run the site)
+tools/venv/
+data/raw/worldclim/
+data/raw/cities15000.txt
+data/raw/*.tif
